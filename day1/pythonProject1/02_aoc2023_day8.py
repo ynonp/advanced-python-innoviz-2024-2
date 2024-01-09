@@ -3,16 +3,16 @@ import typing
 import re
 from collections import namedtuple
 from dataclasses import dataclass
-Node = namedtuple("Node", ["left", "right"])
+import itertools
+# Node = namedtuple("Node", ["left", "right"])
 
 # Same thing - data class
-# @dataclass
-# class Node:
-#     left: str
-#     right: str
-#
-#
-node = Node(left="AAA", right="BBB")
+@dataclass(frozen=True)
+class Node:
+    left: str
+    right: str
+
+
 # print(node.left)
 
 input = """RL
@@ -45,19 +45,59 @@ ZZZ = (ZZZ, ZZZ)
 
 
 
-def parse(input: typing.IO) -> dict[str, Node]:
+def parse(input: typing.IO) -> tuple[str, dict[str, Node]]:
     path = input.readline().strip()
     map = {}
     input.readline()
 
     for line in input:
-        node, left, right = re.findall('\w+', line)
+        node, left, right = re.findall(r'\w+', line)
         map[node] = Node(left=left, right=right)
 
-    return map
+    return (path, map)
 
-map = parse(io.StringIO(input))
-print(map)
+def walk(map: dict[str, Node], path: typing.Iterable) -> list[str]:
+    location = 'AAA'
+    result = []
+    for turn in itertools.takewhile(lambda p: location != 'ZZZ', path):
+        result.append(location)
+        if turn == 'L':
+            location = map[location].left
+        elif turn == 'R':
+            location = map[location].right
+        else:
+            raise Exception(f"Invalid turn {turn}")
 
+    result.append(location)
+    return result
+
+
+def walk_v2(map: dict[str, Node], path: typing.Iterable) -> list[str]:
+    """
+    walk_v2 is a generator version of walk
+    it makes sense because now we don't need to create the list
+    and we can let external code decide when to stop wondering in
+    the desert
+    """
+    location = 'AAA'
+    for turn in path:
+        yield location
+        if turn == 'L':
+            location = map[location].left
+        elif turn == 'R':
+            location = map[location].right
+        else:
+            raise Exception(f"Invalid turn {turn}")
+
+
+
+# path, map = parse(io.StringIO(input))
+# print(walk(map, path))
+
+with open('map.txt', encoding='utf8') as f:
+    path, map = parse(f)
+    print(walk(map, itertools.cycle(path)))
+    print(list(itertools.takewhile(lambda location: location != 'ZZZ',
+                                  walk_v2(map, itertools.cycle(path)))))
 
 
