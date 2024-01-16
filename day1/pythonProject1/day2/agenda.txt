@@ -1,0 +1,9 @@
+Best Practices - Object Oriented
+    - Object Oriented
+    - Advanced Type Hints
+    - Memory
+    - Modules
+    - Virtual Environments
+
+Link to exercise 1:
+https://adventofcode.com/2022/day/9
