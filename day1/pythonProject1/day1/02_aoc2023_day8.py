@@ -57,6 +57,12 @@ def parse(input: typing.IO) -> tuple[str, dict[str, Node]]:
     return (path, map)
 
 def walk(map: dict[str, Node], path: typing.Iterable) -> list[str]:
+    """
+    walks the given desert using a provided path
+    :param map: map of the desert
+    :param path: the LRLL path to walk
+    :return: list of nodes visited
+    """
     location = 'AAA'
     result = []
     for turn in itertools.takewhile(lambda p: location != 'ZZZ', path):
