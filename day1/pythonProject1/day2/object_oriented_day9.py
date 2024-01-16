@@ -1,7 +1,7 @@
 # exercise link:
 # https://adventofcode.com/2022/day/9
 from dataclasses import dataclass
-
+from functools import reduce
 @dataclass(frozen=True)
 class Position:
     x: int = 0
@@ -42,6 +42,8 @@ class Tail:
 
     def __init__(self, head):
         self.head = head
+        self.visited_positions = set()
+        self.visited_positions.add(Position(0, 0))
 
     def follow(self):
         hx = self.head.position.x
@@ -64,8 +66,8 @@ class Tail:
         elif y > hy:
             new_y -= 1
 
-
         self.position = Position(x=new_x, y=new_y)
+        self.visited_positions.add(self.position)
 
 
 def read_instructions_from_file(filename):
@@ -79,16 +81,29 @@ def read_instructions_from_file(filename):
 instructions = read_instructions_from_file('input.txt')
 h = Head()
 t = Tail(h)
-visited_positions = set()
+
+
+# Next Exercise:
+# Need to support longer ropes - a rope of 10 knots!
+# Head + tail1 + tail2 + tail3 + ... + tail9
+# How many positions did tail9 visit?
+rope = reduce(
+    lambda rope, _: rope + [Tail(rope[-1])],
+    range(9),
+    [Head()]
+)
+print(rope)
+
+h = rope[0]
 
 for instruction in instructions:
-    print(t.position, h.position)
-    visited_positions.add(t.position)
     match instruction:
         case "R": h.move_right()
         case "L": h.move_left()
         case "U": h.move_up()
         case "D": h.move_down()
-    t.follow()
 
-print(len(visited_positions))
+    for knot in rope[1:]:
+        knot.follow()
+
+print(len(rope[-1].visited_positions))
