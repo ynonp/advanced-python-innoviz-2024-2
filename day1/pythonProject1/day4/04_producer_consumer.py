@@ -9,7 +9,7 @@ ctx.check_hostname = False
 ctx.verify_mode = ssl.CERT_NONE
 
 q = mp.Queue()
-
+seen = set()
 
 def process(url) -> tuple[str, list[str]]:
     with urlopen(url, context=ctx) as response:
@@ -27,6 +27,10 @@ def process(url) -> tuple[str, list[str]]:
 def runner():
     while True:
         link = q.get()
+        if link in seen:
+            continue
+
+        seen.add(link)
         title, new_links = process(link)
         print(title)
         for link in new_links:
@@ -41,4 +45,19 @@ Exercise:
 
 if __name__ == "__main__":
     q.put("https://docs.python.org/3/library/index.html")
-    runner()
+    pool = mp.Pool(4)
+
+    results = [pool.apply_async(runner) for i in range(4)]
+
+    for r in results:
+        r.wait()
+
+
+
+    # processes = [mp.Process(target=runner) for i in range(8)]
+    #
+    # for p in processes:
+    #     p.start()
+    #
+    # for p in processes:
+    #     p.join()
